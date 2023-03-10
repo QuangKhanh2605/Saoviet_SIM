@@ -3,7 +3,7 @@
 <title>Static Call Graph - [test_uart_sim\test_uart_sim.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image test_uart_sim\test_uart_sim.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Mar 10 14:32:21 2023
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Mar 10 15:49:01 2023
 <BR><P>
 <H3>Maximum Stack Usage =        400 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -271,7 +271,6 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Sim_SendCommand
 <LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Config_Uart_Sim
 <LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Compare_Uart1_RX_Uart3_TX
-<LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[97]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
@@ -327,7 +326,7 @@ Global Symbols
 <P><STRONG><a name="[4]"></a>BusFault_Handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32l1xx_it.o(i.BusFault_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l151xc.o(RESET)
 </UL>
-<P><STRONG><a name="[48]"></a>Check_Status_Config_Sim</STRONG> (Thumb, 96 bytes, Stack size 24 bytes, uart_sim.o(i.Check_Status_Config_Sim))
+<P><STRONG><a name="[48]"></a>Check_Status_Config_Sim</STRONG> (Thumb, 94 bytes, Stack size 24 bytes, uart_sim.o(i.Check_Status_Config_Sim))
 <BR><BR>[Stack]<UL><LI>Max Depth = 256<LI>Call Chain = Check_Status_Config_Sim &rArr; Sim_SendCommand &rArr; Transmit_Data_Uart3 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Sim_SendCommand
@@ -337,7 +336,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Config_Uart_Sim
 </UL>
 
-<P><STRONG><a name="[4c]"></a>Compare_Uart1_RX_Uart3_TX</STRONG> (Thumb, 288 bytes, Stack size 144 bytes, uart_sim.o(i.Compare_Uart1_RX_Uart3_TX))
+<P><STRONG><a name="[4c]"></a>Compare_Uart1_RX_Uart3_TX</STRONG> (Thumb, 310 bytes, Stack size 144 bytes, uart_sim.o(i.Compare_Uart1_RX_Uart3_TX))
 <BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = Compare_Uart1_RX_Uart3_TX &rArr; Display_Uart1 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[49]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
@@ -351,7 +350,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_SMS_Sim
 </UL>
 
-<P><STRONG><a name="[52]"></a>Config_Uart_Sim</STRONG> (Thumb, 284 bytes, Stack size 128 bytes, uart_sim.o(i.Config_Uart_Sim))
+<P><STRONG><a name="[52]"></a>Config_Uart_Sim</STRONG> (Thumb, 314 bytes, Stack size 128 bytes, uart_sim.o(i.Config_Uart_Sim))
 <BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = Config_Uart_Sim &rArr; Check_Status_Config_Sim &rArr; Sim_SendCommand &rArr; Transmit_Data_Uart3 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Sim_SendCommand
@@ -658,7 +657,7 @@ Global Symbols
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_RxCpltCallback
 </UL>
 
-<P><STRONG><a name="[7f]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 102 bytes, Stack size 8 bytes, main.o(i.HAL_UART_RxCpltCallback))
+<P><STRONG><a name="[7f]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 86 bytes, Stack size 8 bytes, main.o(i.HAL_UART_RxCpltCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = HAL_UART_RxCpltCallback &rArr; HAL_UART_Receive_IT
 </UL>
 <BR>[Calls]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Receive_IT
@@ -704,7 +703,7 @@ Global Symbols
 <P><STRONG><a name="[6]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32l1xx_it.o(i.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l151xc.o(RESET)
 </UL>
-<P><STRONG><a name="[8a]"></a>Send_SMS_Sim</STRONG> (Thumb, 108 bytes, Stack size 8 bytes, main.o(i.Send_SMS_Sim))
+<P><STRONG><a name="[8a]"></a>Send_SMS_Sim</STRONG> (Thumb, 106 bytes, Stack size 8 bytes, main.o(i.Send_SMS_Sim))
 <BR><BR>[Stack]<UL><LI>Max Depth = 240<LI>Call Chain = Send_SMS_Sim &rArr; Sim_SendCommand &rArr; Transmit_Data_Uart3 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Sim_SendCommand
@@ -725,7 +724,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[4a]"></a>Sim_SendCommand</STRONG> (Thumb, 316 bytes, Stack size 144 bytes, uart_sim.o(i.Sim_SendCommand))
+<P><STRONG><a name="[4a]"></a>Sim_SendCommand</STRONG> (Thumb, 356 bytes, Stack size 144 bytes, uart_sim.o(i.Sim_SendCommand))
 <BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = Sim_SendCommand &rArr; Transmit_Data_Uart3 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delete_Buffer
@@ -801,7 +800,7 @@ Global Symbols
 
 <P><STRONG><a name="[9e]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
-<P><STRONG><a name="[3e]"></a>main</STRONG> (Thumb, 262 bytes, Stack size 16 bytes, main.o(i.main))
+<P><STRONG><a name="[3e]"></a>main</STRONG> (Thumb, 114 bytes, Stack size 16 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 400<LI>Call Chain = main &rArr; Config_Uart_Sim &rArr; Check_Status_Config_Sim &rArr; Sim_SendCommand &rArr; Transmit_Data_Uart3 &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Setup_On_Off_Sim
@@ -816,7 +815,6 @@ Global Symbols
 <LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART1_UART_Init
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM2_Init
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL><P>

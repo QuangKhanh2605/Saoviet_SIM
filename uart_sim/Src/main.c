@@ -71,8 +71,10 @@ void Send_SMS_Sim(void);
 UART_BUFFER rx_uart3;
 UART_BUFFER rx_uart1;
 
+uint8_t test[2]="AT";
 uint16_t t=0;
 
+uint8_t check=0;
 int dem=0;
 
 /* USER CODE END 0 */
@@ -84,8 +86,8 @@ int dem=0;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	rx_uart1.huart=huart1;
-	rx_uart3.huart=huart3;
+	rx_uart1.huart=&huart1;
+	rx_uart3.huart=&huart3;
   /* USER CODE END 1 */
   
 
@@ -127,7 +129,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		Delete_Buffer(rx_uart3.sim_rx, &rx_uart3.countBuffer);
-		
+	
 		Config_Uart_Sim(&rx_uart1,&rx_uart3);
 		
 		Send_SMS_Sim();

@@ -7,11 +7,13 @@
 
 typedef struct
 {
-	UART_HandleTypeDef huart;
+	UART_HandleTypeDef* huart;
 	uint8_t buffer;
 	uint16_t countBuffer;
 	char sim_rx[5000];
 }UART_BUFFER;
+
+
 
 void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim, 
                       GPIO_TypeDef* GPIO2, uint16_t GPIO_Pin_PWKEY,  
