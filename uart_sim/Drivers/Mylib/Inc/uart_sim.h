@@ -14,7 +14,6 @@ typedef struct
 }UART_BUFFER;
 
 
-
 void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim, 
                       GPIO_TypeDef* GPIO2, uint16_t GPIO_Pin_PWKEY,  
                       GPIO_TypeDef* GPIO3, uint16_t GPIO_Pin_RESET);

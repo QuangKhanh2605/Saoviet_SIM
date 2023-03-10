@@ -71,10 +71,8 @@ void Send_SMS_Sim(void);
 UART_BUFFER rx_uart3;
 UART_BUFFER rx_uart1;
 
-uint8_t test[2]="AT";
 uint16_t t=0;
 
-uint8_t check=0;
 int dem=0;
 
 /* USER CODE END 0 */
@@ -95,7 +93,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
+	
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -149,12 +147,16 @@ void Send_SMS_Sim(void)
 		
 	}
 	HAL_Delay(50);
-	while(rx_uart3.sim_rx[1]==NULL)
+	while(Compare_Uart1_RX_Uart3_TX(&rx_uart1, &rx_uart3, "ONLED5")==0)
 	{
 		
 	}
+	dem++;
 	HAL_Delay(50);
-	dem=Receive_SMS_Sim(rx_uart3.sim_rx,"ONLED5");
+	
+	//dem=Receive_SMS_Sim(rx_uart3.sim_rx,"ONLED5");
+	Display_Uart1(*rx_uart1.huart,rx_uart3.sim_rx);
+	Delete_Buffer(rx_uart3.sim_rx,&rx_uart3.countBuffer);
 	if(dem==1)
 	{
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_SET);
@@ -393,7 +395,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == huart1.Instance)
 	{
 		rx_uart1.sim_rx[(rx_uart1.countBuffer)++]= rx_uart1.buffer;
-		HAL_UART_Receive_IT(&huart3,&rx_uart1.buffer,1);
+		HAL_UART_Receive_IT(&huart1,&rx_uart1.buffer,1);
 	}
   /* NOTE: This function should not be modified, when the callback is needed,
            the HAL_UART_RxCpltCallback could be implemented in the user file
