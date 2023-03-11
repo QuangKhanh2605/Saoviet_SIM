@@ -21,17 +21,22 @@ void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim,
 int8_t Sim_SendCommand(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* command,char* response);
 																 
 int8_t Compare_Uart1_RX_Uart3_TX(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* response);
-																 
+		
+int8_t Uart1_To_Uart3(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3);
+
 int8_t Receive_SMS_Sim(char* command,char* response);
+
+int8_t Check_Rx_Complete(UART_BUFFER *rx_uart);
 
 void Config_Uart_Sim(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3);
 
 void Check_Status_Config_Sim(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3, char* command,char* response);
 														 
 void Transmit_Data_Uart3(UART_HandleTypeDef huart, char* command);
-void Delete_Buffer(char* buf, uint16_t *size_buf);
+void Delete_Buffer(UART_BUFFER *rx_uart);
 void Display_Uart1(UART_HandleTypeDef huart,void* data);
 void Send_Command_Uart1_Uart3(char* command,char* response);
 void Send_SMS_Sim(void);
+
 
 #endif

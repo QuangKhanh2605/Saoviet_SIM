@@ -8,7 +8,9 @@ int8_t Sim_SendCommand(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* comman
 	uint8_t answer = 0;
 	Transmit_Data_Uart3(*rx_uart3->huart,command);
 	Display_Uart1(*rx_uart1->huart,command);
-	HAL_Delay(20);
+	while(Check_Rx_Complete(rx_uart3)==0)
+	{}
+		
 	if(strstr(rx_uart3->sim_rx,response) != NULL) 
 	{
 		answer = 1;
@@ -18,7 +20,7 @@ int8_t Sim_SendCommand(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* comman
 		answer = 0;
 	}
 	Display_Uart1(*rx_uart1->huart,rx_uart3->sim_rx);
-	Delete_Buffer(rx_uart3->sim_rx,&rx_uart3->countBuffer);
+	Delete_Buffer(rx_uart3);
 	return answer;
 }
 
@@ -27,10 +29,15 @@ int8_t Compare_Uart1_RX_Uart3_TX(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,ch
 	uint8_t answer = 0;
 	if(rx_uart1->sim_rx[1]!=NULL)
 	{
-		HAL_Delay(20);
+		while(Check_Rx_Complete(rx_uart1)==0)
+		{}
+			
 		Display_Uart1(*rx_uart1->huart,rx_uart1->sim_rx);	
 		HAL_UART_Transmit(rx_uart3->huart, (uint8_t*)rx_uart1->sim_rx, (uint8_t)strlen(rx_uart1->sim_rx), 1000);
-		HAL_Delay(20);
+		rx_uart3->buffer=0x00;
+		while(Check_Rx_Complete(rx_uart3)==0)
+		{}
+			
 		Display_Uart1(*rx_uart1->huart,rx_uart3->sim_rx);
 		if(strstr(rx_uart3->sim_rx,response) != NULL) 
 		{
@@ -40,8 +47,26 @@ int8_t Compare_Uart1_RX_Uart3_TX(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,ch
 		{
 			answer = 0;
 		}
-		Delete_Buffer(rx_uart1->sim_rx,&rx_uart1->countBuffer);
-		Delete_Buffer(rx_uart3->sim_rx,&rx_uart3->countBuffer);
+		Delete_Buffer(rx_uart1);
+		Delete_Buffer(rx_uart3);
+	}
+	return answer;
+}
+
+int8_t Uart1_To_Uart3(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3)
+{
+	uint8_t answer = 0;
+	if(Check_Rx_Complete(rx_uart1)==1)
+	{
+		Display_Uart1(*rx_uart1->huart,rx_uart1->sim_rx);	
+		HAL_UART_Transmit(rx_uart3->huart, (uint8_t*)rx_uart1->sim_rx, (uint8_t)strlen(rx_uart1->sim_rx), 1000);
+		Delete_Buffer(rx_uart1);
+	}
+  if(Check_Rx_Complete(rx_uart3)==1)
+	{
+		Display_Uart1(*rx_uart1->huart,rx_uart3->sim_rx);
+		Delete_Buffer(rx_uart3);
+		answer=1;
 	}
 	return answer;
 }
@@ -90,7 +115,7 @@ void Check_Status_Config_Sim(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3, char*
 			}
 		}
 		count10Times=0;
-		Delete_Buffer(rx_uart3->sim_rx,&rx_uart3->countBuffer);
+		Delete_Buffer(rx_uart3);
 		}	
 }
 
@@ -118,13 +143,14 @@ void Display_Uart1(UART_HandleTypeDef huart,void* data)
 	HAL_UART_Transmit(&huart,(uint8_t *)"\r\n",(uint16_t)strlen("\r\n"),1000);
 }
 
-void Delete_Buffer(char* buf, uint16_t *size_buf)
+void Delete_Buffer(UART_BUFFER *rx_uart)
 {
-	*size_buf=0;
-	int len = strlen(buf);
+	rx_uart->countBuffer=0;
+	rx_uart->buffer=0x00;
+	int len = strlen(rx_uart->sim_rx);
 	for(int i = 0; i < len; i++)
 	{
-		buf[i] = 0;
+		rx_uart->sim_rx[i] = 0;
 	}
 }
 
@@ -152,4 +178,18 @@ void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim,
 	HAL_Delay(2000);
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_PWKEY,GPIO_PIN_RESET);
 	HAL_Delay(25000);
+}
+
+int8_t Check_Rx_Complete(UART_BUFFER *rx_uart)
+{
+	uint16_t answer=0;
+	if(rx_uart->buffer==0x0A)
+	{
+		HAL_Delay(1);
+		if(rx_uart->buffer==0x0A)
+		{
+			answer=1;
+		}
+	}
+	return answer;
 }

@@ -117,6 +117,9 @@ int main(void)
 	Setup_On_Off_Sim(GPIOB, On_Off_Sim,
                    GPIOB, Pin_PWKEY,
 									 GPIOC, Pin_RESET);
+	Delete_Buffer(&rx_uart3);
+	Config_Uart_Sim(&rx_uart1,&rx_uart3);
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,12 +129,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		Delete_Buffer(rx_uart3.sim_rx, &rx_uart3.countBuffer);
-	
-		Config_Uart_Sim(&rx_uart1,&rx_uart3);
 		
-		Send_SMS_Sim();
-
+		//Send_SMS_Sim();
+		dem=Uart1_To_Uart3(&rx_uart1, &rx_uart3);
+		if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)==0)
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_SET);
+		else
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_RESET);
   }
   /* USER CODE END 3 */
 }
@@ -156,13 +160,12 @@ void Send_SMS_Sim(void)
 	
 	//dem=Receive_SMS_Sim(rx_uart3.sim_rx,"ONLED5");
 	Display_Uart1(*rx_uart1.huart,rx_uart3.sim_rx);
-	Delete_Buffer(rx_uart3.sim_rx,&rx_uart3.countBuffer);
+	Delete_Buffer(&rx_uart3);
 	if(dem==1)
 	{
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_SET);
 	}
 
-HAL_Delay(1000000);
 }
 
 
@@ -364,9 +367,36 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+	/*Configure GPIO pins : PB3 PB4 PB5 */
+  GPIO_InitStruct.Pin =  GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
+	if(huart->Instance == huart3.Instance)
+	{
+		rx_uart3.sim_rx[(rx_uart3.countBuffer)++]= rx_uart3.buffer;
+		HAL_UART_Receive_IT(&huart3,&rx_uart3.buffer,1);
+		
+	}
+	
+	if(huart->Instance == huart1.Instance)
+	{
+		rx_uart1.sim_rx[(rx_uart1.countBuffer)++]= rx_uart1.buffer;
+		HAL_UART_Receive_IT(&huart1,&rx_uart1.buffer,1);
+	}
+  /* NOTE: This function should not be modified, when the callback is needed,
+           the HAL_UART_RxCpltCallback could be implemented in the user file
+   */
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -379,26 +409,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
-   */
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-	if(huart->Instance == huart3.Instance)
-	{
-		rx_uart3.sim_rx[(rx_uart3.countBuffer)++]= rx_uart3.buffer;
-		HAL_UART_Receive_IT(&huart3,&rx_uart3.buffer,1);
-	}
-	
-	if(huart->Instance == huart1.Instance)
-	{
-		rx_uart1.sim_rx[(rx_uart1.countBuffer)++]= rx_uart1.buffer;
-		HAL_UART_Receive_IT(&huart1,&rx_uart1.buffer,1);
-	}
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_RxCpltCallback could be implemented in the user file
    */
 }
 
