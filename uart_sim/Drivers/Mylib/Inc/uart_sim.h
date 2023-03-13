@@ -24,9 +24,9 @@ int8_t Compare_Uart1_RX_Uart3_TX(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,ch
 		
 int8_t Uart1_To_Uart3(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3);
 
-int8_t Receive_SMS_Sim(char* command,char* response);
-
 int8_t Check_Rx_Complete(UART_BUFFER *rx_uart);
+
+int8_t Wait_SMS_Receive(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* response);
 
 void Config_Uart_Sim(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3);
 
@@ -37,6 +37,8 @@ void Delete_Buffer(UART_BUFFER *rx_uart);
 void Display_Uart1(UART_HandleTypeDef huart,void* data);
 void Send_Command_Uart1_Uart3(char* command,char* response);
 void Send_SMS_Sim(void);
+
+void Config_SMS_Receive(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3);
 
 
 #endif

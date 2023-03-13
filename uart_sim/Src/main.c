@@ -119,7 +119,7 @@ int main(void)
 									 GPIOC, Pin_RESET);
 	Delete_Buffer(&rx_uart3);
 	Config_Uart_Sim(&rx_uart1,&rx_uart3);
-	
+	Config_SMS_Receive(&rx_uart1, &rx_uart3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -131,21 +131,13 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		
 		//Send_SMS_Sim();
-		dem=Uart1_To_Uart3(&rx_uart1, &rx_uart3);
-		if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)==0)
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_SET);
-		else
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_RESET);
+		//dem=Uart1_To_Uart3(&rx_uart1, &rx_uart3);
+		if(Wait_SMS_Receive(&rx_uart1,&rx_uart3,"ONLED5")==1) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
   }
   /* USER CODE END 3 */
 }
 void Send_SMS_Sim(void)
 {
-	while(Sim_SendCommand(&rx_uart1, &rx_uart3, "AT+CMGF=1","OK")==0)
-	{
-		HAL_Delay(1000);
-	}
-	
 	while(Compare_Uart1_RX_Uart3_TX(&rx_uart1, &rx_uart3, "OK123")==0)
 	{
 		

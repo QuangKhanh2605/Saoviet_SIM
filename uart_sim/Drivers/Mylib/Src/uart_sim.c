@@ -34,7 +34,7 @@ int8_t Compare_Uart1_RX_Uart3_TX(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,ch
 			
 		Display_Uart1(*rx_uart1->huart,rx_uart1->sim_rx);	
 		HAL_UART_Transmit(rx_uart3->huart, (uint8_t*)rx_uart1->sim_rx, (uint8_t)strlen(rx_uart1->sim_rx), 1000);
-		rx_uart3->buffer=0x00;
+
 		while(Check_Rx_Complete(rx_uart3)==0)
 		{}
 			
@@ -119,24 +119,6 @@ void Check_Status_Config_Sim(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3, char*
 		}	
 }
 
-int8_t Receive_SMS_Sim(char* command,char* response)
-{
-	uint8_t answer = 0;
-	if(command[1]!=NULL)
-	{
-		if(strstr(command,response) != NULL) 
-		{
-			answer = 1;
-			
-		}
-		else 
-		{
-			answer = 0;
-		}
-	}
-	return answer;
-}
-
 void Display_Uart1(UART_HandleTypeDef huart,void* data)																								
 {
 	HAL_UART_Transmit(&huart,(uint8_t *)data,(uint16_t)strlen(data),1000);
@@ -193,3 +175,39 @@ int8_t Check_Rx_Complete(UART_BUFFER *rx_uart)
 	}
 	return answer;
 }
+
+void Config_SMS_Receive(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3)
+{
+	while(Sim_SendCommand(rx_uart1, rx_uart3, "AT+CMGF=1","OK")==0)
+	{
+		HAL_Delay(1000);
+	}
+	
+	while(Sim_SendCommand(rx_uart1, rx_uart3, "AT+CNMI=1,2","OK")==0)
+	{
+		HAL_Delay(1000);
+	}
+}
+
+int8_t Wait_SMS_Receive(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* response)
+{
+	uint8_t answer = 0;
+	if(Check_Rx_Complete(rx_uart3)==1)
+	{
+		if(strstr(rx_uart3->sim_rx,response) != NULL) 
+		{
+			answer = 1;
+			
+		}
+		else 
+		{
+			answer = 0;
+		}
+		Display_Uart1(*rx_uart1->huart,rx_uart3->sim_rx);
+		Delete_Buffer(rx_uart3);
+	}
+	return answer;
+}
+
+
+
