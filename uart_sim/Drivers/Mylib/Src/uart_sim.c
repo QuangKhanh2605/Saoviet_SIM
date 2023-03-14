@@ -144,22 +144,28 @@ void Transmit_Data_Uart3(UART_HandleTypeDef huart, char* command)
 
 void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim, 
                       GPIO_TypeDef* GPIO2, uint16_t GPIO_Pin_PWKEY,  
-                      GPIO_TypeDef* GPIO3, uint16_t GPIO_Pin_RESET)
+                      GPIO_TypeDef* GPIO3, uint16_t GPIO_Pin_RESET, uint32_t timeOut)
 {
+	if(timeOut<=2)
+	{
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_On_Off_Sim,GPIO_PIN_RESET);
-	HAL_Delay(1000);
+	}
 	
+	if(timeOut>2 && timeOut<=3)
+	{
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_PWKEY,GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_Pin_RESET,GPIO_PIN_RESET);
-
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_On_Off_Sim,GPIO_PIN_SET);
-	HAL_Delay(1000);
+	}
 	
+	if(timeOut>3 && timeOut <=6)
+	{
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_PWKEY,GPIO_PIN_SET);
-	
-	HAL_Delay(2000);
+	}
+	if(timeOut>6 && timeOut <=21)
+	{
 	HAL_GPIO_WritePin(GPIOB, GPIO_Pin_PWKEY,GPIO_PIN_RESET);
-	HAL_Delay(25000);
+	}
 }
 
 int8_t Check_Rx_Complete(UART_BUFFER *rx_uart)
@@ -204,7 +210,7 @@ int8_t Wait_SMS_Receive(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* respo
 			answer = 0;
 		}
 		Display_Uart1(*rx_uart1->huart,rx_uart3->sim_rx);
-		Delete_Buffer(rx_uart3);
+		//Delete_Buffer(rx_uart3);
 	}
 	return answer;
 }

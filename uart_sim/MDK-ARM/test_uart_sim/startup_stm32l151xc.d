@@ -1,1 +1,0 @@
-test_uart_sim\startup_stm32l151xc.o: startup_stm32l151xc.s

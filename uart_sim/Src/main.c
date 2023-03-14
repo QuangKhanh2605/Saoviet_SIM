@@ -23,8 +23,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
+#include "main.h"
+#include "CLCD.h"
+#include "user_LCD.h"
+#include "check_Button.h"
+#include "Relay_Led.h"
+#include "user_LCD_object.h"
+#include "user_check_button.h"
 #include "uart_sim.h"
+#include "user_sim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +41,13 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define RELAY1 GPIO_PIN_2 
+#define RELAY2 GPIO_PIN_3
+#define RELAY3 GPIO_PIN_0
+#define RELAY4 GPIO_PIN_1
+#define LED5   GPIO_PIN_0
+#define LED6   GPIO_PIN_1
+
 #define On_Off_Sim GPIO_PIN_13
 #define Pin_PWKEY  GPIO_PIN_0
 #define Pin_RESET  GPIO_PIN_5
@@ -51,30 +65,50 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+uint32_t runTime=0;
+uint32_t time1=10; //so giay cho an
+uint32_t time2=10;	//so phut giua 2 chu ky ban
+uint32_t time3=5; //thoi gian giua 2 moto vang va chinh luong 
+
+uint16_t State=1;
+uint16_t checkState=0;
+uint16_t countState=0;
+uint16_t setupCount=1;
+uint16_t check_Power_OFF=0;
+
+//gio phut giay
+uint16_t hh, mm, ss;
+
+CLCD_Name LCD;
+
+UART_BUFFER rx_uart3;
+UART_BUFFER rx_uart1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void Send_SMS_Sim(void);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-UART_BUFFER rx_uart3;
-UART_BUFFER rx_uart1;
-
-uint16_t t=0;
-
-int dem=0;
-
+void Delay_1ms(void);
+void Delay_s(int time);
+void Check_BT_Callback(void);
+void Check_Test(void);
+void Set_Time(uint16_t *hh, uint16_t *mm, uint16_t *ss);
+void Run_Feed_Shrimp(void);
+void BT_Check_Up_Down(void);
+void Display_Time(void);
+void Setup_SIM(void);
+void Read_Flash(void);
+void Check_SMS_Receive(void);
 /* USER CODE END 0 */
 
 /**
@@ -93,7 +127,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-	
+
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -107,59 +141,62 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_UART_Init();
-  MX_USART1_UART_Init();
   MX_TIM2_Init();
+  MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_UART_Receive_IT(&huart3,&rx_uart3.buffer,1);
 	HAL_UART_Receive_IT(&huart1,&rx_uart1.buffer,1);
-	HAL_TIM_Base_Start_IT(&htim2);
-	Setup_On_Off_Sim(GPIOB, On_Off_Sim,
-                   GPIOB, Pin_PWKEY,
-									 GPIOC, Pin_RESET);
-	Delete_Buffer(&rx_uart3);
-	Config_Uart_Sim(&rx_uart1,&rx_uart3);
-	Config_SMS_Receive(&rx_uart1, &rx_uart3);
+	
+	CLCD_4BIT_Init(&LCD, 16,2, GPIOC, GPIO_PIN_8,GPIOC, GPIO_PIN_7,
+                             GPIOC, GPIO_PIN_6,GPIOB, GPIO_PIN_15,
+                             GPIOB, GPIO_PIN_14,GPIOB, GPIO_PIN_12);
+	
+	Setup_SIM();
+	Read_Flash();
+	
+	CLCD_SetCursor(&LCD, 0,0);
+	CLCD_WriteString(&LCD, "        00:00:00");
+	
+	//Receive_SMS_Setup("+CMT: +84966674796,23/03/14,09:34:14+28 SETUP T1=  100  t3:199", &time1, &time2, &time3);
+	Run_Begin(&setupCount, time1, time2, time3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  
+	while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		//while(Compare_Uart1_RX_Uart3_TX(&rx_uart1, &rx_uart3, "OK123")==0){}
 		
-		//Send_SMS_Sim();
-		//dem=Uart1_To_Uart3(&rx_uart1, &rx_uart3);
-		if(Wait_SMS_Receive(&rx_uart1,&rx_uart3,"ONLED5")==1) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+		Check_SMS_Receive();
+		
+		Display_Time();
+		Check_BT_Callback();
+		
+		if(State==0 )
+		{
+			Check_Test();
+			BT_Esc_Exit_Setup(&State, &setupCount, &time1, &time2, &time3);
+			USER_LCD_Display_Running_OR_Setup(State);
+			if(setupCount!=3) BT_Check_Up_Down();
+			USER_LCD_Display_Setup(&LCD, setupCount);
+		}
+		
+		if(State==1) 
+		{
+			Run_Feed_Shrimp();
+			USER_LCD_Display_Running_OR_Setup(State);
+			USER_LCD_Display_Running(&LCD, setupCount);
+			Check_Test();
+		}
   }
   /* USER CODE END 3 */
 }
-void Send_SMS_Sim(void)
-{
-	while(Compare_Uart1_RX_Uart3_TX(&rx_uart1, &rx_uart3, "OK123")==0)
-	{
-		
-	}
-	HAL_Delay(50);
-	while(Compare_Uart1_RX_Uart3_TX(&rx_uart1, &rx_uart3, "ONLED5")==0)
-	{
-		
-	}
-	dem++;
-	HAL_Delay(50);
-	
-	//dem=Receive_SMS_Sim(rx_uart3.sim_rx,"ONLED5");
-	Display_Uart1(*rx_uart1.huart,rx_uart3.sim_rx);
-	Delete_Buffer(&rx_uart3);
-	if(dem==1)
-	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0,GPIO_PIN_SET);
-	}
-
-}
-
 
 /**
   * @brief System Clock Configuration
@@ -320,53 +357,222 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5|GPIO_PIN_9|GPIO_PIN_0, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2 
+                          |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
+                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
+                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
+                          |GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14 
+                          |GPIO_PIN_15, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC5 PC9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_9;
+  /*Configure GPIO pins : PC13 PC0 PC1 PC2 
+                           PC3 PC5 PC6 PC7 
+                           PC8 PC9 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2 
+                          |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
+                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-	
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_13;
+  /*Configure GPIO pins : PA0 PA1 PA2 PA3 
+                           PA8 PA9 PA10 PA11 
+                           PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
+                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
+                          |GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA8 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PB3 PB4 PB5 */
-  GPIO_InitStruct.Pin =  GPIO_PIN_5;
+  /*Configure GPIO pins : PB0 PB12 PB13 PB14 
+                           PB15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14 
+                          |GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB3 PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
+
+void Check_SMS_Receive(void)
+{
+	if(Wait_SMS_Receive(&rx_uart1,&rx_uart3,"AT+RESET")==1) 
+	{
+		Reset_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+		Reset_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+		runTime=0;
+		countState=0;
+		Delete_Buffer(&rx_uart3);
+	}
+	if(Wait_SMS_Receive(&rx_uart1,&rx_uart3,"SETUP")==1) 
+	{
+		Receive_SMS_Setup(rx_uart3.sim_rx, &time1, &time2, &time3);
+		Reset_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+		Reset_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+		runTime=0;
+		countState=0;
+		State=1;
+		FLASH_WritePage(FLASH_USER_START_ADDR, FLASH_USER_END_ADDR, 1, time1, time2, time3);
+		Run_Begin(&setupCount, time1, time2, time3);
+		Delete_Buffer(&rx_uart3);
+	}
+}
+
+
+void Run_Feed_Shrimp(void)
+{
+	if(countState==0)
+	{
+		Set_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+		countState++;
+		runTime=0;
+	}
+	if(countState==1 && runTime>=time3 )
+	{
+		Set_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+		countState++;
+		runTime=0;
+	}
+	if(countState==2 && runTime>=time1 )
+	{
+		Reset_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+		countState++;
+		runTime=0;
+	}
+	if(countState==3 && runTime>=time3 )
+	{
+		Reset_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+		countState++;
+		runTime=0;
+	}
+	if(countState==4 && runTime>=time2)
+	{
+		runTime=0;
+		countState=0;
+	}
+}
+
+void Check_BT_Callback(void)
+{
+	Check_BT_ENTER(&State, &checkState, &setupCount, &time1, &time2, &time3);
+	Check_BT_ESC(State, &setupCount);
+	Check_BT_UP(State);
+	Check_BT_DOWN(State);
+		
+	//Check_Test();
+}
+
+void Set_Time(uint16_t *hh, uint16_t *mm, uint16_t *ss)
+{
+	const uint16_t MINUTES_OF_THE_HOUR=60;
+	const uint16_t SECOND_OF_THE_HOUR=60;
+	const uint32_t SECOND_OF_THE_DAY=86400;
+	
+	*hh=runTime/(MINUTES_OF_THE_HOUR*SECOND_OF_THE_HOUR);
+	*mm=(runTime-(*hh)*MINUTES_OF_THE_HOUR*SECOND_OF_THE_HOUR)/SECOND_OF_THE_HOUR;
+	*ss=(runTime-(*hh)*MINUTES_OF_THE_HOUR*SECOND_OF_THE_HOUR-(*mm)*SECOND_OF_THE_HOUR);
+	
+	if(runTime>=SECOND_OF_THE_DAY-1)
+	{
+	runTime=0; *hh=0; *mm=0; *ss=0;
+	}
+}
+
+void Check_Test(void)
+{
+	if(checkState==1)
+	{
+		Reset_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+		Reset_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+		countState=0;
+		runTime=0;
+		checkState=0;
+	}
+	if(State==0)
+	{
+		Reset_Relay_Led(GPIOC, RELAY1, GPIOC, RELAY2,GPIOC, LED5);
+			Reset_Relay_Led(GPIOA, RELAY3, GPIOA, RELAY4,GPIOC, LED6);
+			countState=0;
+			runTime=0;
+	}
+}
+
+void Display_Time(void)
+{
+	Set_Time(&hh, &mm, &ss);
+	LCD_Change_State_Time_HH_MM_SS(hh, mm, ss);
+	UintTime_To_CharTime_HH_MM_SS(hh,  mm, ss);
+	USER_LCD_Display_Time(&LCD);
+}
+
+void Setup_SIM(void)
+{
+	float PWM_runtime_LCD=1.32;
+	CLCD_SetCursor(&LCD, 2,0);
+	CLCD_WriteString(&LCD, "Loading SIM");	
+	while(runTime<=22)
+	{
+	Setup_On_Off_Sim(GPIOB, On_Off_Sim,
+                   GPIOB, Pin_PWKEY,
+									 GPIOC, Pin_RESET, runTime);
+	CLCD_SetCursor(&LCD, runTime/PWM_runtime_LCD,1);
+	CLCD_WriteString(&LCD, ".");
+	}
+	if(runTime<=25)
+	{
+	CLCD_SetCursor(&LCD, 2,0);
+	CLCD_WriteString(&LCD, " Config SIM");
+	}
+	Delete_Buffer(&rx_uart3);
+	Config_Uart_Sim(&rx_uart1,&rx_uart3);
+	Config_SMS_Receive(&rx_uart1, &rx_uart3);
+}
+
+void Read_Flash(void)
+{
+	check_Power_OFF=FLASH_ReadData32(FLASH_USER_START_ADDR);
+	
+	if(check_Power_OFF == 1)
+	{
+		time1=FLASH_ReadData32(FLASH_USER_START_ADDR + 4);
+		time2=FLASH_ReadData32(FLASH_USER_START_ADDR + 8);
+		time3=FLASH_ReadData32(FLASH_USER_START_ADDR + 12);
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  UNUSED(htim);
+	runTime++;
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -390,18 +596,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void Delay_1ms(void)
 {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(htim);
-	if(htim->Instance == htim2.Instance)
+	__HAL_TIM_SetCounter(&htim2,0);
+	while (__HAL_TIM_GetCounter(&htim2)<1000);
+}
+void Delay_s(int time)
+{
+	int i=0;
+	for(i=0;i<time;i++)
 	{
-		t++;
+		Delay_1ms();
 	}
-
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
-   */
 }
 
 /* USER CODE END 4 */

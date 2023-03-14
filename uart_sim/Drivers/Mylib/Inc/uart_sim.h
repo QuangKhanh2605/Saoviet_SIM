@@ -16,7 +16,7 @@ typedef struct
 
 void Setup_On_Off_Sim(GPIO_TypeDef* GPIO1, uint16_t GPIO_Pin_On_Off_Sim, 
                       GPIO_TypeDef* GPIO2, uint16_t GPIO_Pin_PWKEY,  
-                      GPIO_TypeDef* GPIO3, uint16_t GPIO_Pin_RESET);
+                      GPIO_TypeDef* GPIO3, uint16_t GPIO_Pin_RESET, uint32_t timeOut);
 
 int8_t Sim_SendCommand(UART_BUFFER *rx_uart1, UART_BUFFER *rx_uart3,char* command,char* response);
 																 

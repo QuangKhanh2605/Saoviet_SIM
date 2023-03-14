@@ -510,12 +510,12 @@ ARM Macro Assembler    Page 8
               00000000 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
-ork --depend=test_uart_sim\startup_stm32l151xc.d -otest_uart_sim\startup_stm32l
-151xc.o -I.\RTE\_test_uart_sim -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.7.0\CMSIS\Core
-\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32L1xx_DFP\1.3.0\Drivers\CMSIS\Device\ST
-\STM32L1xx\Include --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSI
-ON SETA 526" --predefine="_RTE_ SETA 1" --predefine="STM32L151xC SETA 1" --list
-=startup_stm32l151xc.lst startup_stm32l151xc.s
+ork --depend=project_feed_shrimp\startup_stm32l151xc.d -oproject_feed_shrimp\st
+artup_stm32l151xc.o -I.\RTE\_Project_Feed_Shrimp -IC:\Keil_v5\ARM\PACK\ARM\CMSI
+S\5.7.0\CMSIS\Core\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32L1xx_DFP\1.3.0\Drive
+rs\CMSIS\Device\ST\STM32L1xx\Include --predefine="__MICROLIB SETA 1" --predefin
+e="__UVISION_VERSION SETA 526" --predefine="_RTE_ SETA 1" --predefine="STM32L15
+1xC SETA 1" --list=startup_stm32l151xc.lst startup_stm32l151xc.s
 
 
 
